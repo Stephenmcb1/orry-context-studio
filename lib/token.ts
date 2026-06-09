@@ -1,16 +1,20 @@
 // lib/token.ts — Edge-compatible, no Node.js Buffer
 
 function toBase64Url(bytes: ArrayBuffer): string {
-  return btoa(String.fromCharCode(...new Uint8Array(bytes)))
+  return btoa(Array.from(new Uint8Array(bytes), (b) => String.fromCharCode(b)).join(''))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=/g, '');
 }
 
-function fromBase64Url(str: string): Uint8Array {
+function fromBase64Url(str: string): ArrayBuffer {
   const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
   const bin = atob(b64);
-  return new Uint8Array(bin.split('').map((c) => c.charCodeAt(0)));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) {
+    bytes[i] = bin.charCodeAt(i);
+  }
+  return bytes.buffer as ArrayBuffer;
 }
 
 async function importKey(usage: KeyUsage) {
